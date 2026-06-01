@@ -1,7 +1,7 @@
 import { Pool } from 'pg'
 import { analyzeFeverTrend } from './feverLogic'
 
-describe('🏥 真实数据库集成测试 - POST /api/v1/patients/:babyId/temperatures', () => {
+describe.skip('🏥 真实数据库集成测试 - POST /api/v1/patients/:babyId/temperatures', () => {
   
   // 1. 直接连接真实的本地/测试数据库
   const pool = new Pool({

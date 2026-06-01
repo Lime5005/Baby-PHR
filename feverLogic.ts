@@ -25,6 +25,5 @@ export function analyzeFeverTrend(recentTemperatures: TemperatureRecord[]): Feve
     };
   }
 
-  return {shouldAlert: false}
-
+  return { shouldAlert: false };
 }
