@@ -73,6 +73,7 @@ export function computeVaccinationStatus({
   administeredVaccines,
   referenceDate = new Date().toISOString().slice(0, 10)
 }: VaccinationStatusInput): VaccinationStatusItem[] {
+  // ignore any administered vaccine records that are after the reference date for completed status calculation
   const effectiveRecords = administeredVaccines.filter(
     (record) => record.administeredAt.slice(0, 10) <= referenceDate
   );

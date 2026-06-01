@@ -111,7 +111,30 @@ describe('Vaccination schedule challenge', () => {
         })
       ])
     );
-
   });
+
+  test('the administeredAt date after the referenceDate is filtered out', () => {
+  const result = computeVaccinationStatus({
+    dateOfBirth: '2026-01-15',
+    administeredVaccines: [
+      {
+        vaccineCode: 'DTAP_IPV_HIB_HEPB',
+        doseNumber: 1,
+        administeredAt: '2026-04-01'
+      }
+    ],
+    referenceDate: '2026-03-20'
+  });
+
+  expect(result).toEqual(
+    expect.arrayContaining([
+      expect.objectContaining({
+        vaccineCode: 'DTAP_IPV_HIB_HEPB',
+        doseNumber: 1,
+        status: 'overdue'
+      })
+    ])
+  );
+});
 
 });
