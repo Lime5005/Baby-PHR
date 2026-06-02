@@ -21,6 +21,12 @@ export interface VaccinationStatusItem extends VaccinationScheduleItem {
 
 export const VACCINATION_SCHEDULE: VaccinationScheduleItem[] = [
   {
+    vaccineCode: 'code-1',
+    label: 'Sample Vaccine',
+    doseNumber: 1,
+    recommendedAgeMonths: 2
+  },
+  {
     vaccineCode: 'DTAP_IPV_HIB_HEPB',
     label: '6-in-1 vaccine',
     doseNumber: 1,

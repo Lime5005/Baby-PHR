@@ -23,6 +23,7 @@ export function VaccinationDashboard({
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitSuccessMessage, setSubmitSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -62,25 +63,18 @@ export function VaccinationDashboard({
     payload: CreateVaccinationPayload
   ): Promise<void> {
     setIsSubmitting(true);
+    setSubmitSuccessMessage(null);
 
     try {
       await createVaccinationRecord(babyId, payload);
-
-      // Interview exercise:
-      // After the POST succeeds, refresh the vaccination status list
-      // so the UI reflects the new persisted record.
-      //
-      // Expected behavior:
-      // 1. Re-fetch GET /vaccinations/status
-      // 2. Update local state with the new schedule
-      // 3. Keep error handling consistent with the initial load path
       const updatedStatus = await fetchVaccinationStatus(babyId, referenceDate);
       setData(updatedStatus);
+      setSubmitSuccessMessage('Vaccination record saved successfully.');
     } catch (error) {
-      alert(
+      throw (
         error instanceof Error
-          ? error.message
-          : 'Could not create vaccination record.'
+          ? error
+          : new Error('Could not create vaccination record.')
       );
     } finally {
       setIsSubmitting(false);
@@ -111,6 +105,10 @@ export function VaccinationDashboard({
         onSubmit={handleCreateVaccination}
         isSubmitting={isSubmitting}
       />
+
+      {submitSuccessMessage ? (
+        <p className="submit-success-message">{submitSuccessMessage}</p>
+      ) : null}
 
       <VaccinationStatusList schedule={data.schedule} />
     </main>
