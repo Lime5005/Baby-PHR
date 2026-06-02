@@ -97,3 +97,22 @@ li {
   background: #f5f9fc;
   border: 1px solid #dde7ef;
 }
+
+.vaccination-item-overdue {
+  background: #fff1f1;
+  border-color: #f0c3c3;
+}
+
+.vaccination-item-upcoming {
+  background: #eef9f1;
+  border-color: #bfdcc7;
+}
+
+.vaccination-item-completed {
+  background: #f2f7fb;
+}
+
+.vaccination-item-due-today {
+  background: #fff8e8;
+  border-color: #ecd9a1;
+}

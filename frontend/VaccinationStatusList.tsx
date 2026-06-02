@@ -11,6 +11,13 @@ const STATUS_LABELS: Record<VaccinationStatusItem['status'], string> = {
   upcoming: 'Upcoming'
 };
 
+const STATUS_CLASS_NAMES: Record<VaccinationStatusItem['status'], string> = {
+  completed: 'vaccination-item vaccination-item-completed',
+  overdue: 'vaccination-item vaccination-item-overdue',
+  dueToday: 'vaccination-item vaccination-item-due-today',
+  upcoming: 'vaccination-item vaccination-item-upcoming'
+};
+
 export function VaccinationStatusList({
   schedule
 }: VaccinationStatusListProps) {
@@ -19,7 +26,10 @@ export function VaccinationStatusList({
       <h2>Vaccination Schedule</h2>
       <ul>
         {schedule.map((item) => (
-          <li key={`${item.vaccineCode}-${item.doseNumber}`}>
+          <li
+            key={`${item.vaccineCode}-${item.doseNumber}`}
+            className={STATUS_CLASS_NAMES[item.status]}
+          >
             <strong>{item.label}</strong>{' '}
             <span>dose {item.doseNumber}</span>{' '}
             <span>({STATUS_LABELS[item.status]})</span>

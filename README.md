@@ -84,6 +84,8 @@ Run only the pure logic tests:
 ```bash
 npx jest backend/feverLogic.test.ts backend/weightLogic.test.ts backend/vaccinationLogic.test.ts --runInBand
 ```
+Check Baby PHR vaccination status:
+`http://localhost:5173/api/v1/patients/baby-1/vaccinations/status?referenceDate=2026-06-02`
 
 ## Notes
 
