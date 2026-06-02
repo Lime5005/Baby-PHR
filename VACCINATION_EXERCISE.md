@@ -1,19 +1,19 @@
 # Vaccination Schedule Exercise
 
-This repo now includes a realistic interview-style backend exercise around baby vaccination tracking.
+This repo now includes a realistic interview-style exercise around baby vaccination tracking across backend and frontend.
 
 ## Goal
 
 Implement a vaccination schedule feature for a baby Patient Health Record.
 
-The core business rule lives in `vaccinationLogic.ts`.
+The core business rule lives in `backend/vaccinationLogic.ts`.
 
 ## What is already provided
 
 - `VACCINATION_SCHEDULE`: a small pediatric schedule.
 - `computeVaccinationStatus(...)`: an intentionally incomplete implementation.
-- `vaccinationLogic.test.ts`: a set of unit tests that describe the expected behavior.
-- `GET /api/v1/patients/:babyId/vaccinations/status`: a thin API route in `server.ts`.
+- `backend/vaccinationLogic.test.ts`: a set of unit tests that describe the expected behavior.
+- `GET /api/v1/patients/:babyId/vaccinations/status`: a thin API route in `backend/server.ts`.
 
 ## Your task
 
@@ -33,3 +33,4 @@ Expected behavior:
 2. Fix `computeVaccinationStatus(...)`.
 3. Add at least one extra edge-case test of your own.
 4. If you want more realism, persist vaccine records in Postgres and wire the API route to real data.
+5. For the frontend portion, see `FRONTEND_EXERCISE.md`.

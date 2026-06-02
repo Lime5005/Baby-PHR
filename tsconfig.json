@@ -5,10 +5,11 @@
     "lib": ["ES2022", "DOM"],
     "strict": true,
     "isolatedModules": true,
+    "jsx": "react-jsx",
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "Node16",
-    "types": ["jest", "node"]
+    "types": ["jest", "node", "react", "react-dom"]
   }
 }

@@ -1,4 +1,5 @@
 import express from 'express';
+import process from 'node:process';
 import { Pool } from 'pg';
 import { analyzeFeverTrend } from './feverLogic';
 import { computeVaccinationStatus } from './vaccinationLogic';
@@ -11,6 +12,8 @@ import {
 const app = express();
 app.use(express.json());
 
+process.loadEnvFile?.();
+
 function isValidIsoDateString(value: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
     return false;
@@ -22,11 +25,11 @@ function isValidIsoDateString(value: string): boolean {
 }
 
 const pool = new Pool({
-  host: 'localhost',
-  port: 5432,
-  user: 'lime',
-  password: '',
-  database: 'lime'
+  host: process.env.DB_HOST ?? 'localhost',
+  port: Number.parseInt(process.env.DB_PORT ?? '5432', 10),
+  user: process.env.DB_USER ?? 'lime',
+  password: process.env.DB_PASSWORD ?? '',
+  database: process.env.DB_NAME ?? 'lime'
 });
 
 app.post('/api/v1/patients/:babyId/temperatures', async (req, res) => {

@@ -12,7 +12,7 @@ export async function findBabyPatientById(
 ): Promise<BabyPatient | null> {
   const result = await pool.query(
     `
-      SELECT id, date_of_birth
+      SELECT id, TO_CHAR(date_of_birth, 'YYYY-MM-DD') as date_of_birth
       FROM baby_patients
       WHERE id = $1
       LIMIT 1;
@@ -36,7 +36,7 @@ export async function listAdministeredVaccinesByBabyId(
 ): Promise<AdministeredVaccine[]> {
   const result = await pool.query(
     `
-      SELECT vaccine_code, dose_number, administered_at
+      SELECT vaccine_code, dose_number, TO_CHAR(administered_at, 'YYYY-MM-DD') AS administered_at
       FROM baby_vaccinations
       WHERE baby_id = $1
       ORDER BY administered_at ASC;
@@ -47,10 +47,7 @@ export async function listAdministeredVaccinesByBabyId(
   return result.rows.map((row) => ({
     vaccineCode: row.vaccine_code,
     doseNumber: row.dose_number,
-    administeredAt:
-      row.administered_at instanceof Date
-        ? row.administered_at.toISOString().slice(0, 10)
-        : String(row.administered_at).slice(0, 10)
+    administeredAt: row.administered_at
   }));
 }
 
@@ -66,7 +63,7 @@ export async function recordVaccineAdministration(
     `
       INSERT INTO baby_vaccinations (baby_id, vaccine_code, dose_number, administered_at)
       VALUES ($1, $2, $3, $4)
-      RETURNING vaccine_code, dose_number, administered_at;
+      RETURNING vaccine_code, dose_number, TO_CHAR(administered_at, 'YYYY-MM-DD') AS administered_at;
     `,
     [babyId, vaccineCode, doseNumber, administeredAt]
   );
