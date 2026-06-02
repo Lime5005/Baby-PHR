@@ -1,40 +1,33 @@
 import express from 'express';
 import { Pool } from 'pg';
 import { analyzeFeverTrend } from './feverLogic';
+import { computeVaccinationStatus } from './vaccinationLogic';
 import {
-  AdministeredVaccine,
-  computeVaccinationStatus
-} from './vaccinationLogic';
+  findBabyPatientById,
+  listAdministeredVaccinesByBabyId,
+  recordVaccineAdministration
+} from './vaccinationRepository';
 
 const app = express();
 app.use(express.json());
 
+function isValidIsoDateString(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const parsedDate = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(parsedDate.getTime()) &&
+    parsedDate.toISOString().slice(0, 10) === value;
+}
+
 const pool = new Pool({
   host: 'localhost',
   port: 5432,
-  user: 'root',
-  password: 'postGres',
+  user: 'lime',
+  password: '',
   database: 'lime'
 });
-
-const vaccinationMockData: Record<
-  string,
-  {
-    dateOfBirth: string;
-    administeredVaccines: AdministeredVaccine[];
-  }
-> = {
-  'baby-1': {
-    dateOfBirth: '2026-01-15',
-    administeredVaccines: [
-      {
-        vaccineCode: 'DTAP_IPV_HIB_HEPB',
-        doseNumber: 1,
-        administeredAt: '2026-03-16'
-      }
-    ]
-  }
-};
 
 app.post('/api/v1/patients/:babyId/temperatures', async (req, res) => {
   const { babyId } = req.params;
@@ -78,32 +71,98 @@ app.post('/api/v1/patients/:babyId/temperatures', async (req, res) => {
   }
 });
 
-app.get('/api/v1/patients/:babyId/vaccinations/status', (req, res) => {
+app.get('/api/v1/patients/:babyId/vaccinations/status', async (req, res) => {
   const { babyId } = req.params;
   const { referenceDate } = req.query;
-  const patientRecord = vaccinationMockData[babyId];
 
-  if (!patientRecord) {
-    return res.status(404).json({ error: 'Patient not found' });
+  try {
+    const patientRecord = await findBabyPatientById(pool, babyId);
+
+    if (!patientRecord) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    const administeredVaccines = await listAdministeredVaccinesByBabyId(
+      pool,
+      babyId
+    );
+
+    const schedule = computeVaccinationStatus({
+      dateOfBirth: patientRecord.dateOfBirth,
+      administeredVaccines,
+      referenceDate:
+        typeof referenceDate === 'string' ? referenceDate : undefined
+    });
+
+    return res.json({
+      babyId,
+      dateOfBirth: patientRecord.dateOfBirth,
+      schedule
+    });
+  } catch (error) {
+    console.log('Vaccination status retrieval failed:', error);
+    return res.status(500).json({ error: 'Internal error occurred' });
+  }
+});
+
+app.post('/api/v1/patients/:babyId/vaccinations', async (req, res) => {
+  const { babyId } = req.params;
+  const { vaccineCode, doseNumber, administeredAt } = req.body;
+
+  if (typeof vaccineCode !== 'string' || vaccineCode.trim() === '') {
+    return res.status(400).json({
+      error: 'Invalid request body: vaccineCode must be a non-empty string'
+    });
   }
 
-  const schedule = computeVaccinationStatus({
-    dateOfBirth: patientRecord.dateOfBirth,
-    administeredVaccines: patientRecord.administeredVaccines,
-    referenceDate:
-      typeof referenceDate === 'string' ? referenceDate : undefined
-  });
+  if (!Number.isInteger(doseNumber) || doseNumber <= 0) {
+    return res.status(400).json({
+      error: 'Invalid request body: doseNumber must be a positive integer'
+    });
+  }
 
-  return res.json({
-    babyId,
-    dateOfBirth: patientRecord.dateOfBirth,
-    schedule
-  });
+  if (
+    typeof administeredAt !== 'string' ||
+    !isValidIsoDateString(administeredAt)
+  ) {
+    return res.status(400).json({
+      error: 'Invalid request body: administeredAt must be a valid ISO date string'
+    });
+  }
+
+  try {
+    // Verify patient exists before recording vaccination
+    const patientRecord = await findBabyPatientById(pool, babyId);
+    if (!patientRecord) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    // Insert the new vaccination record and return the created record
+    const administeredVaccine = await recordVaccineAdministration(
+      pool,
+      babyId,
+      vaccineCode.trim(),
+      doseNumber,
+      administeredAt
+    );
+
+    return res.status(201).json({
+      vaccineCode: administeredVaccine.vaccineCode,
+      doseNumber: administeredVaccine.doseNumber,
+      administeredAt: administeredVaccine.administeredAt
+    });
+  } catch (error) {
+    console.log('Failed to record vaccine administration:', error);
+    return res.status(500).json({ error: 'Internal error occurred' });
+  }
+
 });
 
 export { app };
 
 const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Medical patient record server started on port ${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`Medical patient record server started on port ${PORT}`);
+  });
+}

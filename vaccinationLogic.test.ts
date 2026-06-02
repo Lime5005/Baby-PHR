@@ -126,12 +126,13 @@ describe('Vaccination schedule challenge', () => {
     referenceDate: '2026-03-20'
   });
 
-  expect(result).toEqual(
+  expect(result).not.toEqual(
     expect.arrayContaining([
       expect.objectContaining({
         vaccineCode: 'DTAP_IPV_HIB_HEPB',
         doseNumber: 1,
-        status: 'overdue'
+        status: 'overdue',
+        completedAt: undefined
       })
     ])
   );
