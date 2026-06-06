@@ -21,3 +21,27 @@ export interface CreateVaccinationPayload {
   doseNumber: number;
   administeredAt: string;
 }
+
+export interface GrowthRecord {
+  weightKg: number;
+  measuredAt: string;
+}
+
+export interface GrowthTrendAnalysis {
+  latestWeightKg?: number;
+  averageWeeklyGainKg?: number;
+  shouldAlert: boolean;
+  reason?: string;
+}
+
+export interface GrowthRecordsResponse {
+  babyId: string;
+  dateOfBirth: string;
+  records: GrowthRecord[];
+  analysis: GrowthTrendAnalysis;
+}
+
+export interface CreateGrowthRecordPayload {
+  weightKg: number;
+  measuredAt: string;
+}

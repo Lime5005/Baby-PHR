@@ -16,3 +16,14 @@ CREATE TABLE IF NOT EXISTS baby_vaccinations (
 
 CREATE INDEX IF NOT EXISTS idx_baby_vaccinations_baby_id
   ON baby_vaccinations (baby_id);
+
+CREATE TABLE IF NOT EXISTS baby_growth_records (
+  id SERIAL PRIMARY KEY,
+  baby_id TEXT NOT NULL REFERENCES baby_patients(id) ON DELETE CASCADE,
+  weight_kg NUMERIC(4, 2) NOT NULL CHECK (weight_kg > 0),
+  measured_at DATE NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_baby_growth_records_baby_id
+  ON baby_growth_records (baby_id);

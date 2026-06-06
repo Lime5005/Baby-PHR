@@ -1,5 +1,7 @@
 import {
+  CreateGrowthRecordPayload,
   CreateVaccinationPayload,
+  GrowthRecordsResponse,
   VaccinationStatusResponse
 } from './types';
 
@@ -38,6 +40,34 @@ export async function createVaccinationRecord(
 ): Promise<CreateVaccinationPayload> {
   const response = await fetch(
     `/api/v1/patients/${encodeURIComponent(babyId)}/vaccinations`,
+    {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    }
+  );
+
+  return readJsonOrThrow(response);
+}
+
+export async function fetchGrowthRecords(
+  babyId: string
+): Promise<GrowthRecordsResponse> {
+  const response = await fetch(
+    `/api/v1/patients/${encodeURIComponent(babyId)}/growth-records`
+  );
+
+  return readJsonOrThrow(response);
+}
+
+export async function createGrowthRecord(
+  babyId: string,
+  payload: CreateGrowthRecordPayload
+): Promise<CreateGrowthRecordPayload> {
+  const response = await fetch(
+    `/api/v1/patients/${encodeURIComponent(babyId)}/growth-records`,
     {
       method: 'POST',
       headers: {

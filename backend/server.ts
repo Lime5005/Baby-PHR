@@ -2,7 +2,12 @@ import express from 'express';
 import process from 'node:process';
 import { Pool } from 'pg';
 import { analyzeFeverTrend } from './feverLogic';
+import { analyzeGrowthTrend } from './growthLogic';
 import { computeVaccinationStatus } from './vaccinationLogic';
+import {
+  listGrowthRecordsByBabyId,
+  recordGrowthMeasurement
+} from './growthRepository';
 import {
   findBabyPatientById,
   listAdministeredVaccinesByBabyId,
@@ -104,6 +109,63 @@ app.get('/api/v1/patients/:babyId/vaccinations/status', async (req, res) => {
     });
   } catch (error) {
     console.log('Vaccination status retrieval failed:', error);
+    return res.status(500).json({ error: 'Internal error occurred' });
+  }
+});
+
+app.get('/api/v1/patients/:babyId/growth-records', async (req, res) => {
+  const { babyId } = req.params;
+
+  try {
+    const patientRecord = await findBabyPatientById(pool, babyId);
+
+    if (!patientRecord) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    const records = await listGrowthRecordsByBabyId(pool, babyId);
+    const analysis = analyzeGrowthTrend(records);
+
+    return res.json({
+      babyId,
+      dateOfBirth: patientRecord.dateOfBirth,
+      records,
+      analysis
+    });
+  } catch (error) {
+    console.log('Growth record retrieval failed:', error);
+    return res.status(500).json({ error: 'Internal error occurred' });
+  }
+});
+
+app.post('/api/v1/patients/:babyId/growth-records', async (req, res) => {
+  const { babyId } = req.params;
+  const { weightKg, measuredAt } = req.body;
+
+  try {
+    const patientRecord = await findBabyPatientById(pool, babyId);
+
+    if (!patientRecord) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    if (typeof measuredAt !== 'string' || !isValidIsoDateString(measuredAt)) { 
+      return res.status(400).json('Invalid request body: measuredAt should be a string and is in format YYYY-MM-DD')
+    }
+
+    if (typeof weightKg !== 'number' || Number.isNaN(weightKg) || weightKg <= 0 || weightKg > 30) {
+      return res.status(400).json({error: 'Invalid request body: weightKg should be a number and should be bigger than 2 and less than 30'})
+    }
+    
+    const record = await recordGrowthMeasurement(
+      pool, 
+      babyId,
+      weightKg,
+      measuredAt
+    )
+    return res.status(201).json(record);
+  } catch (error) {
+    console.log('Failed to record growth measurement:', error);
     return res.status(500).json({ error: 'Internal error occurred' });
   }
 });
