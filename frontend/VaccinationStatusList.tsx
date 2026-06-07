@@ -22,21 +22,27 @@ export function VaccinationStatusList({
   schedule
 }: VaccinationStatusListProps) {
   return (
-    <section>
-      <h2>Vaccination Schedule</h2>
-      <ul>
+    <section className="vaccination-schedule-section">
+      <h3>Vaccination Schedule</h3>
+      <ul className="vaccination-schedule-list">
         {schedule.map((item) => (
           <li
             key={`${item.vaccineCode}-${item.doseNumber}`}
             className={STATUS_CLASS_NAMES[item.status]}
           >
-            <strong>{item.label}</strong>{' '}
-            <span>dose {item.doseNumber}</span>{' '}
-            <span>({STATUS_LABELS[item.status]})</span>
-            <div>Due date: {item.dueDate}</div>
-            {item.completedAt ? (
-              <div>Completed at: {item.completedAt}</div>
-            ) : null}
+            <div className="vaccination-item-topline">
+              <div>
+                <strong>{item.label}</strong>
+                <span className="vaccination-dose-label">Dose {item.doseNumber}</span>
+              </div>
+              <span className={`status-badge status-badge-${item.status}`}>
+                {STATUS_LABELS[item.status]}
+              </span>
+            </div>
+            <div className="vaccination-item-meta">
+              <span>Due {item.dueDate}</span>
+              {item.completedAt ? <span>Completed {item.completedAt}</span> : null}
+            </div>
           </li>
         ))}
       </ul>

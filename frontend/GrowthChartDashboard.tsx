@@ -149,21 +149,35 @@ export function GrowthChartDashboard({ babyId }: GrowthChartDashboardProps) {
   const chartPoints = buildChartPoints(data.records);
 
   return (
-    <section className="growth-dashboard">
+    <section className="dashboard-panel growth-dashboard">
       <div className="growth-dashboard-header">
         <div>
+          <p className="panel-eyebrow">Growth</p>
           <h2>Baby Growth Chart</h2>
-          <p>Patient id: {data.babyId}</p>
-          <p>Date of birth: {data.dateOfBirth}</p>
+          <p className="panel-subtitle">
+            Review longitudinal weight measurements and detect flattening trends.
+          </p>
+          <div className="panel-meta">
+            <span>Patient {data.babyId}</span>
+            <span>DOB {data.dateOfBirth}</span>
+          </div>
         </div>
 
         <div className="growth-summary-card">
           <strong>Latest weight</strong>
           <div>{data.analysis.latestWeightKg ?? '-'} kg</div>
           <div>Avg weekly gain: {data.analysis.averageWeeklyGainKg ?? '-'} kg</div>
-          <div>
-            Status: {data.analysis.shouldAlert ? 'Watch closely' : 'On track'}
+          <div className="summary-status-row">
+            <span>Status</span>
+            <span
+              className={`status-badge ${
+                data.analysis.shouldAlert ? 'status-badge-alert' : 'status-badge-stable'
+              }`}
+            >
+              {data.analysis.shouldAlert ? 'Watch closely' : 'On track'}
+            </span>
           </div>
+          {data.analysis.reason ? <div>{data.analysis.reason}</div> : null}
         </div>
       </div>
 
@@ -235,7 +249,9 @@ export function GrowthChartDashboard({ babyId }: GrowthChartDashboardProps) {
         </button>
 
         {formError ? <p>{formError}</p> : null}
-        {submitSuccessMessage ? <p>{submitSuccessMessage}</p> : null}
+        {submitSuccessMessage ? (
+          <p className="submit-success-message">{submitSuccessMessage}</p>
+        ) : null}
       </form>
     </section>
   );

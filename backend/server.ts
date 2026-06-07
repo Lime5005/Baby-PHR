@@ -3,6 +3,11 @@ import process from 'node:process';
 import { Pool } from 'pg';
 import { analyzeFeverTrend } from './feverLogic';
 import { analyzeGrowthTrend } from './growthLogic';
+import {
+  listRecentTemperatureRecordsByBabyId,
+  listTemperatureRecordsByBabyId,
+  recordTemperatureMeasurement
+} from './temperatureRepository';
 import { computeVaccinationStatus } from './vaccinationLogic';
 import {
   listGrowthRecordsByBabyId,
@@ -37,6 +42,33 @@ const pool = new Pool({
   database: process.env.DB_NAME ?? 'lime'
 });
 
+// Use case 1: measure temperature and alert with condition
+app.get('/api/v1/patients/:babyId/temperatures', async (req, res) => {
+  const { babyId } = req.params;
+
+  try {
+    const patientRecord = await findBabyPatientById(pool, babyId);
+
+    if (!patientRecord) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    const records = await listTemperatureRecordsByBabyId(pool, babyId);
+    const recentRecords = [...records]
+      .sort((left, right) => right.measured_at.localeCompare(left.measured_at))
+      .slice(0, 3);
+
+    return res.json({
+      babyId,
+      records,
+      alertStatus: analyzeFeverTrend(recentRecords)
+    });
+  } catch (error) {
+    console.log('Temperature record retrieval failed:', error);
+    return res.status(500).json({ error: 'Internal error occurred' });
+  }
+});
+
 app.post('/api/v1/patients/:babyId/temperatures', async (req, res) => {
   const { babyId } = req.params;
   const { temperatureCelsius, measuredAt } = req.body;
@@ -46,27 +78,23 @@ app.post('/api/v1/patients/:babyId/temperatures', async (req, res) => {
     return res.status(400).json({ error: 'Invalid temperature data.' });
   }
 
+  if (typeof measuredAt !== 'string' || Number.isNaN(Date.parse(measuredAt))) {
+    return res.status(400).json({
+      error: 'Invalid request body: measuredAt must be a valid ISO datetime string'
+    });
+  }
+
   try {
-    await pool.query(
-      `
-        INSERT INTO baby_temperatures (baby_id, temperature_celsius, measured_at)
-        VALUES ($1, $2, $3);
-      `,
-      [babyId, temp, measuredAt]
-    );
+    const patientRecord = await findBabyPatientById(pool, babyId);
 
-    const dbResult = await pool.query(
-      `
-        SELECT temperature_celsius, measured_at
-        FROM baby_temperatures
-        WHERE baby_id = $1
-        ORDER BY measured_at DESC
-        LIMIT 5;
-      `,
-      [babyId]
-    );
+    if (!patientRecord) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
 
-    const alertAnalysis = analyzeFeverTrend(dbResult.rows);
+    await recordTemperatureMeasurement(pool, babyId, temp, measuredAt);
+
+    const recentRecords = await listRecentTemperatureRecordsByBabyId(pool, babyId, 5);
+    const alertAnalysis = analyzeFeverTrend(recentRecords);
 
     return res.status(201).json({
       message: 'Temperature recorded successfully',
@@ -79,6 +107,8 @@ app.post('/api/v1/patients/:babyId/temperatures', async (req, res) => {
   }
 });
 
+
+// Use case 2: vaccination status computation 
 app.get('/api/v1/patients/:babyId/vaccinations/status', async (req, res) => {
   const { babyId } = req.params;
   const { referenceDate } = req.query;
@@ -109,63 +139,6 @@ app.get('/api/v1/patients/:babyId/vaccinations/status', async (req, res) => {
     });
   } catch (error) {
     console.log('Vaccination status retrieval failed:', error);
-    return res.status(500).json({ error: 'Internal error occurred' });
-  }
-});
-
-app.get('/api/v1/patients/:babyId/growth-records', async (req, res) => {
-  const { babyId } = req.params;
-
-  try {
-    const patientRecord = await findBabyPatientById(pool, babyId);
-
-    if (!patientRecord) {
-      return res.status(404).json({ error: 'Patient not found' });
-    }
-
-    const records = await listGrowthRecordsByBabyId(pool, babyId);
-    const analysis = analyzeGrowthTrend(records);
-
-    return res.json({
-      babyId,
-      dateOfBirth: patientRecord.dateOfBirth,
-      records,
-      analysis
-    });
-  } catch (error) {
-    console.log('Growth record retrieval failed:', error);
-    return res.status(500).json({ error: 'Internal error occurred' });
-  }
-});
-
-app.post('/api/v1/patients/:babyId/growth-records', async (req, res) => {
-  const { babyId } = req.params;
-  const { weightKg, measuredAt } = req.body;
-
-  try {
-    const patientRecord = await findBabyPatientById(pool, babyId);
-
-    if (!patientRecord) {
-      return res.status(404).json({ error: 'Patient not found' });
-    }
-
-    if (typeof measuredAt !== 'string' || !isValidIsoDateString(measuredAt)) { 
-      return res.status(400).json('Invalid request body: measuredAt should be a string and is in format YYYY-MM-DD')
-    }
-
-    if (typeof weightKg !== 'number' || Number.isNaN(weightKg) || weightKg <= 0 || weightKg > 30) {
-      return res.status(400).json({error: 'Invalid request body: weightKg should be a number and should be bigger than 2 and less than 30'})
-    }
-    
-    const record = await recordGrowthMeasurement(
-      pool, 
-      babyId,
-      weightKg,
-      measuredAt
-    )
-    return res.status(201).json(record);
-  } catch (error) {
-    console.log('Failed to record growth measurement:', error);
     return res.status(500).json({ error: 'Internal error occurred' });
   }
 });
@@ -221,6 +194,64 @@ app.post('/api/v1/patients/:babyId/vaccinations', async (req, res) => {
     return res.status(500).json({ error: 'Internal error occurred' });
   }
 
+});
+
+// Use case 3: growth recording and growth trend analysis
+app.get('/api/v1/patients/:babyId/growth-records', async (req, res) => {
+  const { babyId } = req.params;
+
+  try {
+    const patientRecord = await findBabyPatientById(pool, babyId);
+
+    if (!patientRecord) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    const records = await listGrowthRecordsByBabyId(pool, babyId);
+    const analysis = analyzeGrowthTrend(records);
+
+    return res.json({
+      babyId,
+      dateOfBirth: patientRecord.dateOfBirth,
+      records,
+      analysis
+    });
+  } catch (error) {
+    console.log('Growth record retrieval failed:', error);
+    return res.status(500).json({ error: 'Internal error occurred' });
+  }
+});
+
+app.post('/api/v1/patients/:babyId/growth-records', async (req, res) => {
+  const { babyId } = req.params;
+  const { weightKg, measuredAt } = req.body;
+
+  try {
+    const patientRecord = await findBabyPatientById(pool, babyId);
+
+    if (!patientRecord) {
+      return res.status(404).json({ error: 'Patient not found' });
+    }
+
+    if (typeof measuredAt !== 'string' || !isValidIsoDateString(measuredAt)) { 
+      return res.status(400).json('Invalid request body: measuredAt should be a string and is in format YYYY-MM-DD')
+    }
+
+    if (typeof weightKg !== 'number' || Number.isNaN(weightKg) || weightKg <= 0 || weightKg > 30) {
+      return res.status(400).json({error: 'Invalid request body: weightKg should be a number and should be bigger than 2 and less than 30'})
+    }
+    
+    const record = await recordGrowthMeasurement(
+      pool, 
+      babyId,
+      weightKg,
+      measuredAt
+    )
+    return res.status(201).json(record);
+  } catch (error) {
+    console.log('Failed to record growth measurement:', error);
+    return res.status(500).json({ error: 'Internal error occurred' });
+  }
 });
 
 export { app };

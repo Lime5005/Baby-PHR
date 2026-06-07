@@ -19,19 +19,50 @@ body {
   min-height: 100vh;
 }
 
-.app-shell {
-  display: grid;
-  gap: 28px;
-}
-
-main {
-  max-width: 860px;
+.app-frame {
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 40px 20px 64px;
+  padding: 32px 20px 64px;
 }
 
-header {
-  margin-bottom: 32px;
+.app-hero {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  align-items: stretch;
+  margin-bottom: 28px;
+}
+
+.app-eyebrow {
+  margin: 0 0 10px;
+  color: #0d6b78;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.app-subtitle {
+  max-width: 60ch;
+  margin: 0;
+  color: #4b657d;
+}
+
+.app-hero-card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(13, 107, 120, 0.94), rgba(23, 50, 77, 0.94));
+  color: #fff;
+  box-shadow: 0 18px 40px rgba(23, 50, 77, 0.16);
+}
+
+.dashboard-grid {
+  display: grid;
+    gap: 28px;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
 }
 
 h1,
@@ -39,13 +70,117 @@ h2 {
   margin: 0 0 12px;
 }
 
-section {
-  background: rgba(255, 255, 255, 0.9);
+.dashboard-panel {
+  grid-column: span 6;
+  background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(23, 50, 77, 0.08);
-  border-radius: 20px;
-  padding: 20px;
-  margin-bottom: 20px;
+  border-radius: 24px;
+  padding: 24px;
   box-shadow: 0 18px 40px rgba(23, 50, 77, 0.08);
+}
+
+.dashboard-panel-wide {
+  grid-column: 1 / -1;
+}
+
+.dashboard-panel-header {
+  margin-bottom: 24px;
+}
+
+.panel-eyebrow {
+  margin: 0 0 8px;
+  color: #0d6b78;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.panel-subtitle {
+  margin: 0;
+  color: #4b657d;
+}
+
+.panel-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+  color: #617990;
+  font-size: 0.92rem;
+}
+
+.panel-stats {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.panel-stats-three {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.panel-stat-card {
+  display: grid;
+  gap: 4px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #f5f9fc;
+  border: 1px solid #dde7ef;
+}
+
+.panel-stat-card-alert {
+  background: #fff2f0;
+  border-color: #f1c2bc;
+}
+
+.panel-stat-label {
+  color: #617990;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.panel-stat-value {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.summary-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.status-badge-stable,
+.status-badge-completed,
+.status-badge-upcoming {
+  background: #eaf6ee;
+  color: #1e6a38;
+}
+
+.status-badge-alert,
+.status-badge-overdue {
+  background: #ffe7e3;
+  color: #a23424;
+}
+
+.status-badge-dueToday {
+  background: #fff3d6;
+  color: #9b6800;
 }
 
 form {
@@ -132,10 +267,46 @@ li {
   border-color: #ecd9a1;
 }
 
-.growth-dashboard {
-  max-width: 860px;
-  margin: 0 auto 64px;
-  padding: 0 20px;
+.vaccination-schedule-section {
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+}
+
+.vaccination-schedule-list {
+  gap: 10px;
+}
+
+.vaccination-item {
+  padding: 14px 16px;
+}
+
+.vaccination-item-topline {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.vaccination-item-topline strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.vaccination-dose-label {
+  color: #617990;
+  font-size: 0.9rem;
+}
+
+.vaccination-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 8px;
+  color: #617990;
+  font-size: 0.92rem;
 }
 
 .growth-dashboard-header {
@@ -190,8 +361,92 @@ li {
   margin-top: 20px;
 }
 
+.fever-dashboard-header {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: minmax(0, 1fr) 220px;
+  align-items: start;
+  margin-bottom: 20px;
+}
+
+.fever-summary-card,
+.fever-chart-card,
+.fever-form {
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(23, 50, 77, 0.08);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 18px 40px rgba(23, 50, 77, 0.08);
+}
+
+.fever-summary-card {
+  display: grid;
+  gap: 8px;
+}
+
+.fever-summary-card-alert {
+  border-color: #e7b7af;
+  background: linear-gradient(180deg, #fff6f4, rgba(255, 255, 255, 0.95));
+  box-shadow: 0 20px 40px rgba(183, 81, 63, 0.14);
+}
+
+.fever-chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.fever-chart-axis {
+  stroke: #9bb3c6;
+  stroke-width: 1.5;
+}
+
+.fever-chart-line {
+  fill: none;
+  stroke: #d6654f;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.fever-chart-point {
+  fill: #0d6b78;
+}
+
+.fever-form {
+  display: grid;
+  gap: 16px;
+  margin-top: 20px;
+}
+
 @media (max-width: 720px) {
-  .growth-dashboard-header {
+  .app-frame {
+    padding: 20px 16px 40px;
+  }
+
+  .app-hero {
     grid-template-columns: 1fr;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-stats-three {
+    grid-template-columns: 1fr;
+  }
+
+  .dashboard-panel,
+  .dashboard-panel-wide,
+  .growth-dashboard-header,
+  .fever-dashboard-header {
+    grid-column: auto;
+    grid-template-columns: 1fr;
+  }
+
+  .vaccination-item-topline,
+  .summary-status-row {
+    align-items: start;
+    flex-direction: column;
   }
 }

@@ -8,6 +8,14 @@ VALUES
   ('baby-1', 'PCV', 1, '2026-03-16')
 ON CONFLICT DO NOTHING;
 
+INSERT INTO baby_temperatures (baby_id, temperature_celsius, measured_at)
+VALUES
+  ('baby-1', 37.4, '2026-05-28T08:00:00Z'),
+  ('baby-1', 38.6, '2026-05-29T08:00:00Z'),
+  ('baby-1', 38.8, '2026-05-29T14:00:00Z'),
+  ('baby-1', 39.1, '2026-05-29T20:00:00Z')
+ON CONFLICT DO NOTHING;
+
 INSERT INTO baby_growth_records (baby_id, weight_kg, measured_at)
 VALUES
   ('baby-1', 3.40, '2026-01-15'),

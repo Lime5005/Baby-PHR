@@ -17,6 +17,17 @@ CREATE TABLE IF NOT EXISTS baby_vaccinations (
 CREATE INDEX IF NOT EXISTS idx_baby_vaccinations_baby_id
   ON baby_vaccinations (baby_id);
 
+CREATE TABLE IF NOT EXISTS baby_temperatures (
+  id SERIAL PRIMARY KEY,
+  baby_id TEXT NOT NULL REFERENCES baby_patients(id) ON DELETE CASCADE,
+  temperature_celsius NUMERIC(4, 1) NOT NULL CHECK (temperature_celsius >= 30 AND temperature_celsius <= 45),
+  measured_at TIMESTAMPTZ NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_baby_temperatures_baby_id
+  ON baby_temperatures (baby_id);
+
 CREATE TABLE IF NOT EXISTS baby_growth_records (
   id SERIAL PRIMARY KEY,
   baby_id TEXT NOT NULL REFERENCES baby_patients(id) ON DELETE CASCADE,

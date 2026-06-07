@@ -93,13 +93,40 @@ export function VaccinationDashboard({
     return <p>No vaccination data found.</p>;
   }
 
+  const overdueCount = data.schedule.filter((item) => item.status === 'overdue').length;
+  const dueTodayCount = data.schedule.filter((item) => item.status === 'dueToday').length;
+  const completedCount = data.schedule.filter((item) => item.status === 'completed').length;
+
   return (
-    <main>
-      <header>
-        <h1>Baby Vaccination Record</h1>
-        <p>Patient id: {data.babyId}</p>
-        <p>Date of birth: {data.dateOfBirth}</p>
+    <section className="dashboard-panel dashboard-panel-wide vaccination-dashboard">
+      <header className="dashboard-panel-header">
+        <div>
+          <p className="panel-eyebrow">Prevention</p>
+          <h2>Baby Vaccination Record</h2>
+          <p className="panel-subtitle">
+            Track scheduled doses, overdue items, and newly completed vaccinations.
+          </p>
+          <div className="panel-meta">
+            <span>Patient {data.babyId}</span>
+            <span>DOB {data.dateOfBirth}</span>
+          </div>
+        </div>
       </header>
+
+      <div className="panel-stats panel-stats-three">
+        <div className="panel-stat-card">
+          <span className="panel-stat-label">Completed</span>
+          <strong className="panel-stat-value">{completedCount}</strong>
+        </div>
+        <div className="panel-stat-card">
+          <span className="panel-stat-label">Due Today</span>
+          <strong className="panel-stat-value">{dueTodayCount}</strong>
+        </div>
+        <div className="panel-stat-card panel-stat-card-alert">
+          <span className="panel-stat-label">Overdue</span>
+          <strong className="panel-stat-value">{overdueCount}</strong>
+        </div>
+      </div>
 
       <AddVaccinationForm
         onSubmit={handleCreateVaccination}
@@ -111,6 +138,6 @@ export function VaccinationDashboard({
       ) : null}
 
       <VaccinationStatusList schedule={data.schedule} />
-    </main>
+    </section>
   );
 }

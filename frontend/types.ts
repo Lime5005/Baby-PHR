@@ -45,3 +45,30 @@ export interface CreateGrowthRecordPayload {
   weightKg: number;
   measuredAt: string;
 }
+
+export interface CreateTemperatureRecordPayload {
+  temperatureCelsius: number;
+  measuredAt: string;
+}
+
+export interface TemperatureRecord {
+  temperature_celsius: number;
+  measured_at: string;
+}
+
+export interface FeverAlertResult {
+  shouldAlert: boolean;
+  reason?: string;
+}
+
+export interface TemperatureRecordResponse {
+  babyId: string;
+  records: TemperatureRecord[];
+  alertStatus: FeverAlertResult;
+}
+
+export interface CreateTemperatureRecordResponse {
+  message: string;
+  currentReading: number;
+  alertStatus: FeverAlertResult;
+}

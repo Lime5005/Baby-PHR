@@ -2,7 +2,10 @@ import {
   CreateGrowthRecordPayload,
   CreateVaccinationPayload,
   GrowthRecordsResponse,
-  VaccinationStatusResponse
+  VaccinationStatusResponse,
+  TemperatureRecordResponse,
+  CreateTemperatureRecordPayload,
+  CreateTemperatureRecordResponse
 } from './types';
 
 async function readJsonOrThrow(response: Response) {
@@ -69,6 +72,35 @@ export async function createGrowthRecord(
   const response = await fetch(
     `/api/v1/patients/${encodeURIComponent(babyId)}/growth-records`,
     {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    }
+  );
+
+  return readJsonOrThrow(response);
+}
+
+export async function fetchTemperatureRecords (
+  babyId: string
+): Promise<TemperatureRecordResponse> {
+  const response = await fetch(
+    `/api/v1/patients/${encodeURIComponent(babyId)}/temperatures`
+  );
+
+  return readJsonOrThrow(response);
+}
+
+export async function createTemperatureRecord (
+  babyId: string,
+  payload: CreateTemperatureRecordPayload
+): Promise<CreateTemperatureRecordResponse> {
+
+  const response = await fetch(
+    `/api/v1/patients/${encodeURIComponent(babyId)}/temperatures`,
+        {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
